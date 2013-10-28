@@ -14,8 +14,14 @@ def _get_location(row):
     current_ip = row['current_login_ip']
     last_ip = row['last_login_ip']
 
-    json_current = _fetch_json(current_ip)
-    json_last = _fetch_json(last_ip)
+    if current_ip == "":
+        json_current = {'country_name': "", 'region_name': ""}
+    else:
+        json_current = _fetch_json(current_ip)
+    if last_ip == "":
+        json_last = {'country_name': "", 'region_name': ""}
+    else:
+        json_last = _fetch_json(last_ip)
 
     return json_current['country_name'], json_current['region_name'],\
       json_last['country_name'], json_last['region_name']
@@ -45,7 +51,7 @@ def main():
                   'login_count', 'current_login_ip', 'last_login_ip',
                   'created_at', 'organization', 'Organization Type',
                   'current_country', 'current_region', 'last_country',
-                  'last_region']
+                  'last_region', 'Repeat']
 
     with open(IMPORT, newline='') as csvfile:
         csvdict = csv.DictReader(csvfile)
@@ -53,14 +59,18 @@ def main():
             current_country, current_region,\
               last_country, last_region = _get_location(row)
 
-            print(_get_location(row))
-            #row.update({'current_country': current_country,
-                        #'current_region': current_region,
-                        #'last_country': last_country,
-                        #'last_region': last_region})
-            #print(row)
-            #input()
-    
+            #print(_get_location(row))
+            row.update({'current_country': current_country,
+                        'current_region': current_region,
+                        'last_country': last_country,
+                        'last_region': last_region})
+            export.append(row)
+
+    with open(EXPORT, 'w', newline='') as csvfile:
+        csvwriter = csv.DictWriter(csvfile, delimiter=',', fieldnames=fieldnames, extrasaction='ignore')
+        csvwriter.writeheader()
+        csvwriter.writerows(export)
 
 if __name__ == "__main__":
     main()
+    print("Done.")
